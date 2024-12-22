@@ -97,10 +97,12 @@ defmodule Passbook do
     # Zip the files on a .pkpass, and optionally delete them
     files = File.ls!(target_path)
 
+    pkpass_filepath = target_path <> "#{opts[:pass_name]}.pkpass"
+
     # Create zip file
     pkpass =
       :zip.create(
-      to_charlist(target_path <> "#{opts[:pass_name]}.pkpass"),
+      to_charlist(pkpass_filepath),
       Enum.map(files, fn file ->
         {to_charlist(file), File.read!(target_path <> file)}
       end)
@@ -108,7 +110,7 @@ defmodule Passbook do
 
     if opts[:delete_raw_pass], do: Enum.map(files, &File.rm(target_path <> to_string(&1)))
 
-    pkpass
+    {:ok, pkpass_filepath}
   end
 
   def generate(_, _, _, _, _, _, _), do: {:error, :invalid_data}
